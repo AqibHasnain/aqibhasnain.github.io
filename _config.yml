@@ -29,7 +29,7 @@ comments:
   facebook:
     appid                :
     num_posts            : # 5 (default)
-    colorscheme          : # "light" (default), "dark"
+    colorscheme          : "dark"
 staticman:
   allowedFields          : ['name', 'email', 'url', 'message']
   branch                 : "gh-pages" # "master", "gh-pages"
@@ -82,7 +82,8 @@ analytics:
 author:
   name             : "Aqib Hasnain"
   avatar           : "avatar.jpg"
-  bio              : "PhD Candidate in Mechanical Engineering at [UCSB CCDC](https://www.ccdc.ucsb.edu/) [BioE](https://bioengineering.ucsb.edu/)"
+  bio              : "PhD Candidate in Mechanical Engineering at [BioE](https://bioengineering.ucsb.edu/)"
+  CCDC             : "https://www.ccdc.ucsb.edu/" 
   location         : "Santa Barbara"
   employer         : 
   pubmed           : #"https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
