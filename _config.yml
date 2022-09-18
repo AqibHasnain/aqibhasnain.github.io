@@ -82,8 +82,9 @@ analytics:
 author:
   name             : "Aqib Hasnain"
   avatar           : "avatar.jpg"
-  bio              : "PhD Candidate in Mechanical Engineering at [BioE](https://bioengineering.ucsb.edu/)"
-  CCDC             : "https://www.ccdc.ucsb.edu/" 
+  bio              : "PhD Candidate in Mechanical Engineering" 
+  CCDC             : "https://www.ccdc.ucsb.edu/"
+  BioE             : "https://bioengineering.ucsb.edu/"
   location         : "Santa Barbara"
   employer         : 
   pubmed           : #"https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
