@@ -14,7 +14,7 @@ Feel free to reach out!
 
 | ![chaos](/images/dalle_double_chaoticattractor_gen.png) |
 |:--:| 
-| *Each grid is meant to represent a chaotic attractor from a dynamical system, however some of them are outpaintings from a large text-to-image model. Can you guess which attractors are fake?* |
+| *Each phase space trajectory is meant to represent a chaotic attractor of a dynamical system, however some of them are outpaintings from a large text-to-image model. Some are obviously fake and others not -- can you guess which attractors are fake?* |
 
 <!-- A data-driven personal website
 ======
