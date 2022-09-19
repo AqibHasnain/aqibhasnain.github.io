@@ -9,3 +9,4 @@ paperurl: 'http://aqibhasnain.github.io/files/hasnain2017buoyantexp.pdf'
 citation: 'A. Hasnain, E. Segura, K. Alba. (2017) &quot; Buoyant displacement flow of immiscible fluids in inclined pipes. &quot; <i>Journal of Fluid Mechanics</i>. 824 (661-687).'
 ---
 We experimentally study the iso-viscous displacement flow of two immiscible Newtonian fluids in an inclined pipe.
+![feature](/images/hasnain2017buoyantexp_feature.jpg)
