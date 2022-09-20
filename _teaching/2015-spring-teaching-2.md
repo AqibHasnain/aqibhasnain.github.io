@@ -1,20 +1,11 @@
 ---
-title: "Teaching experience 2"
+title: "Biological Control -- Teaching assistant "
 collection: teaching
-type: "Workshop"
-permalink: /teaching/2015-spring-teaching-1
-venue: "University 1, Department"
-date: 2015-01-01
-location: "City, Country"
+type: "Course"
+permalink: /teaching/biologicalcontrol
+venue: "UC Santa Barbara, Department of Mechanical Engineering"
+date: 2020-10-01
+location: "Santa Barbara, California"
 ---
 
-This is a description of a teaching experience. You can use markdown like any other post.
-
-Heading 1
-======
-
-Heading 2
-======
-
-Heading 3
-======
+This course taught dynamical systems analysis of biological systems and design of synthetic biological circuits to both graduate and undergraduate students. Main responsibilities were answering student's questions, hosting office hours, and grading. I was also responsible for delivering two lectures on recently developed techniques for gene regulatory network reconstruction e.g. dynamic mode decomposition. 
