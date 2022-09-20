@@ -5,6 +5,8 @@ permalink: /posts/2022/09/metric-learning-essential-genes/
 tags:
   - metric learning
   - deep learning
+  - manifold learning
+  - dimensionality reduction
   - essential genes
   - microbes
 ---
