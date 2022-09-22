@@ -1,6 +1,6 @@
 ---
 title: 'Future post: Applications of deep learning in synthetic biology'
-date: sometime soon
+date: 2022
 permalink: /posts/2022/12/deeplearningsynbio/
 tags:
   - deep learning
