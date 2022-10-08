@@ -1,5 +1,5 @@
 ---
-title: "Effect of sensor fusion on data-driven learning of Koompan Operators"
+title: "Effect of sensor fusion on data-driven learning of Koopman Operators"
 collection: publications
 permalink: /publication/balakrishan2021effect
 excerpt: ''
