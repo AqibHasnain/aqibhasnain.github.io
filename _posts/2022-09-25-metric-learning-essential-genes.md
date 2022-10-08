@@ -13,11 +13,11 @@ tags:
 
 Essential genes are those which are crucial for survival of an organism in a given context. This post will introduce manifold and metric learning to characterize and classify essential genes from the chaos game representation of a genetic sequence.
 
+This post will be an instructional guide to constructing metric spaces and perform manifold learning in Python. 
+
 Briefly, what are metric spaces? 
 ======
-
-Can we learn a metric on a space from data points? 
-======
+A metric space, without too much mathematical abstraction, is just a set of data points together with a concept of distance between the data points. The distance between points is given as the output of a function and this function is typically called the metric. To reveal a bit of what's to come, we are wanting to identify a metric space in which essential genes and non-essential genes are distant from each other. Right now, it is unclear what the space looks like and what the right metric is. Let's see if we can find a metric space with our desired properties.  
 
 Learning essential gene landscapes
 ======
@@ -30,9 +30,13 @@ from matplotlib import cm
 import seaborn as sns
 import numpy as np
 import pandas as pd
+pd.options.mode.chained_assignment = None
 from Bio import SeqIO # biopython used for parsing fasta files of sequences
 import gzip # to read the compre
 import scanpy as sc
+plt.style.use('dark_background')
+plt.rcParams.update({'font.size':22});
+plt.rcParams.update({'axes.linewidth':1.5})
 ```
 
 ### The database of essential genes
@@ -281,17 +285,9 @@ Let's also create a dataframe that contains essential gene data of a single orga
 
 ```python
 bacteria_df = anno_df.loc[anno_df.bacteria.isin(['Acinetobacter baylyi ADP1'])]
-bacteria_df['is_essential'] = 1 # make a column noting that these genes are essential. we'll use this for modeling purposes
+bacteria_df['is_essential'] = np.ones(len(bacteria_df)) # make a column noting that these genes are essential. we'll use this for modeling purposes
 f'num essential genes of ADP1: {len(bacteria_df)}'
 ```
-
-    <ipython-input-58-53dd51896a2f>:2: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      bacteria_df['is_essential'] = 1 # make a column noting that these genes are essential. we'll use this for modeling purposes
-
 
 
 
@@ -300,7 +296,7 @@ f'num essential genes of ADP1: {len(bacteria_df)}'
 
 
 
-Since we want to learn the essential gene landscape, we'll also need to know the nonessential gene sequences. Below is a function to parse the `cds_from_genomic` fasta file for ADP1 obtained from [NCBI](https://www.ncbi.nlm.nih.gov/nuccore/NC_005966.1). This file contains gene sequences for all known protein coding genes. We will make a dataframe of all genes and note whether it is essential or not
+Since we want to learn the essential gene landscape (i.e. for any new gene sequence, we want to classify if the gene is essential or not by where it lies in some space that we create/learn from data), we'll also need to know the nonessential gene sequences. Below is a function to parse the `cds_from_genomic` fasta file for ADP1 obtained from [NCBI](https://www.ncbi.nlm.nih.gov/nuccore/NC_005966.1). This file contains gene sequences for all known protein coding genes. We will make a dataframe of all genes and note whether it is essential or not
 
 
 ```python
@@ -334,8 +330,6 @@ adp1_df = getRecords(adp1_cds_from_genomic, np.array(bacteria_df.gene)) # all ad
 for column in bacteria_df.columns: # give adp1_df the same columns as bacteria_df
     if column not in adp1_df.columns:
         adp1_df[column] = ''
-    
-    
 ```
 
 We can now concatenate the essential and nonessential gene rows and form our entire ADP1 essential gene dataset
@@ -345,14 +339,14 @@ We can now concatenate the essential and nonessential gene rows and form our ent
 adp1_df = pd.concat( ( bacteria_df, adp1_df[adp1_df['is_essential'].isin([0])] ), axis=0).reset_index(drop=True)
 ```
 
-Next, we will explore chaos game representations (CGR) as a gene sequence embedding approach and ask the questions: 
+We now need a way to perform computations with the gene sequences. We need a gene sequence string -> unique vector function. For this task we will explore chaos game representations (CGR) as a gene sequence embedding approach and ask the questions: 
 
-- Do CGRs allow us to distinguish between essential and nonessential genes?
+- Do CGRs allow us to distinguish between essential and nonessential genes? (Unsupervised approach)
 
-- If not, can we use CGRs as a starting point to learn a more meaningful representation  of essential gene landscapes?
+- If not, can we use CGRs as a starting point to learn a more meaningful representation of essential gene landscapes? (Supervised approach)
 
 ### Chaos game representation
-I won't discuss details of the representation (code below). I encourage you to check out the [paper](https://academic.oup.com/nar/article/18/8/2163/2383530) that first applied CGR to encode gene sequences, finding global and local structure, similarity of gene sequences, and frequency of k-mers. 
+To start, I encourage you to check out the [paper](https://academic.oup.com/nar/article/18/8/2163/2383530) that first applied CGR to encode gene sequences, finding global and local structure, similarity of gene sequences, and frequency of k-mers. Briefly, the chaos game representation is formed by setting up a discrete-time dynamical system that computes the vector embedding of a gene sequence. The dynamical system has been shown to be chaotic, i.e. initial conditions that are infinitesimally close eventually become exponentially far as the system is evolved. Why this is a useful property? Well it implies that for any two gene sequences, we are likely to end up with unique vector embeddings using the chaos game representation. Below is a class which takes a sequence and length of desired k-mers and outputs the chaos game representation:
 
 
 ```python
@@ -411,7 +405,7 @@ class CGR_SeqAlignment:
         return cgr_mat
 ```
 
-Let's apply CGR to the ADP1 sequences we just compiled in `adp1_df`
+Let's apply CGR to the ADP1 sequences we compiled in `adp1_df`
 
 
 ```python
@@ -435,7 +429,7 @@ def plot_CGR(seq,k):
     cgr = CGR_SeqAlignment()              
     cgr_kmers = cgr.count_kmers(seq,k)   
     cgr_prob = cgr.get_frequencies(cgr_kmers, k)                  
-    plt.figure(); plt.title(f'Chaos game representation for {k}-mers')
+    plt.figure(); plt.title(f'CGR of a {k}-mer')
     plt.imshow(cgr.chaos_game_representation(cgr_prob, k),cmap='viridis')
     plt.gca().invert_yaxis(); plt.colorbar()
     plt.show()
@@ -449,19 +443,19 @@ plot_CGR(adp1_df.iloc[-1]['seq'],k)
 
 
     
-![png](/images/output_29_0.png)
+![png](output_29_0.png)
     
 
 
 
     
-![png](/images/output_29_1.png)
+![png](output_29_1.png)
     
 
 
-The above heatmaps show the CGRs for an essential and nonessential gene respectively. The origin corresponds to the base pair `A`, the lower right corner is `T`, the upper right is `G`, and the upper left is `C`. Again, I  encourage you to  read the paper linked above if you haven't previously been introduced to CGRs and how they can be applied to gene sequences. 
+The above heatmaps show the CGRs for an essential and nonessential gene respectively. The origin corresponds to the base pair `A`, the lower right corner is `T`, the upper right is `G`, and the upper left is `C`. One useful property that can be read off from the CGRs is that if we see sparse quadrant, say e.g. the first quadrant, we can deduce that there are few k-mers that contain in that sequence that contain a `T` followed by a `G` or a `C` followed by a `G`. I encourage you to read the paper linked above if you haven't previously been introduced to CGRs for a better understanding of what information CGRs are encoding. 
 
-The first question tha I want to explore is the following: 
+Now that we have vector embeddings of essential and non-essential gene sequences, the first question tha I want to explore is the following: 
 
 **Are essential and nonessential genes linearly separable by their CGRs?**
 
@@ -477,53 +471,59 @@ adata
 
 
 
-    AnnData object with n_obs × n_vars = 3310 × 256
-        obs: 'gene_id', 'locus_tag', 'is_essential', 'seq', 'organism_id', 'gene', 'protein_id?', '?', 'biological process', 'biological function', 'bacteria', 'genome_ref', 'media', 'GO_id', '??', '???'
+    AnnData object with n_obs × n_vars = 3309 × 256
+        obs: 'organism_id', 'gene_id', 'gene', 'protein_id?', '?', 'biological process', 'biological function', 'bacteria', 'genome_ref', 'media', 'locus_tag', 'GO_id', '??', '???', 'seq', 'is_essential'
 
 
 
-Let's now check for linear separability between the essential (1) and nonessential genes (0)
+Let's now check for linear separability between the essential (denoted by 1) and nonessential genes (denoted by 0). A very commonly used approach to identify boundaries in space between data points is to perform dimensionality reduction using principal component analysis (PCA). PCA is a very simple technique that identifies directions of maximal variance in the data, each direction encoded by a vector (the principal component or PC) and each PC is orthogonal to one another, i.e. they form an orthonormal basis. 
 
 
 ```python
 sc.pp.pca(adata)
-sc.pl.pca(adata,color='is_essential')
+sc.pl.pca(adata,color='is_essential',cmap='Set3')
 ```
 
 
     
-![png](/images/output_35_0.png)
+![png](output_35_0.png)
     
 
 
-The answer to the question is **no**.
+Plotting PC1 against PC2 allows us to say that the essential genes (yellow data points) and non-essential genes (green data points) are **not** linearly separable by their CGRs alone. In other words, CGRs may not encode information of essentiality of a gene. 
 
-Okay then the next question is, **can we identify a nonlinear embedding that doesn't have knowledge of essentiality**? Let's explore manifold learninig as one such approach to identify this nonlinear embedding, specifically Uniform Manifold Approximation and Projection (UMAP) will be used. I highly recommend checking out this [write-up](https://pair-code.github.io/understanding-umap/) on the algorithmic ins and outs of UMAP, as I could not provide a better interpretation and intuition.  
+This leads to the question, **can we identify a nonlinear embedding that doesn't have knowledge of essentiality**? 
 
 ### Manifold learning
 
+Let's explore manifold learninig as one such approach to identify this nonlinear embedding, specifically Uniform Manifold Approximation and Projection (UMAP) will be used. I highly recommend checking out this [write-up](https://pair-code.github.io/understanding-umap/) on the algorithmic ins and outs of UMAP, as I could not provide a better interpretation and intuition. 
+
+The general idea behind manifold learning is to, from data, learn the manifold that the data is being sampled from. It may be intuitive to most of us that if we are taking measurements from a physical or biological system, we do not expect the data points to fill all of Euclidean space, even if we are able to collect as many samples as we like. This is because every system operates under constraints e.g. concentration of biomolecules cannot approach infinity. If we can learn the data generating manifold, then we analyze how data points organize on the manifold and then make conclusions about individual cluster differences. This is what UMAP was designed to do.
+
+In short, we first make connections between genes in ambient space or in a reduced space (for example the subspace spanned by the first $k$ PCs). In other words, we build a graph where the vertices are the genes and the edges are connections between genes and the connections represent the distance between genes. Let's build a $k$ nearest neighbor (KNN) graph using Euclidean distance in the PC space. 
+
 
 ```python
-sc.pp.neighbors(adata)
+sc.pp.neighbors(adata, n_neighbors=20, n_pcs=20)
 sc.tl.umap(adata)
 ```
 
 
 ```python
-sc.pl.umap(adata,color='is_essential')
+sc.pl.umap(adata,color='is_essential',cmap='Set3')
 ```
 
 
     
-![png](/images/output_39_0.png)
+![png](output_39_0.png)
     
 
 
-Once again, the answer is **no**. It appears that we will have to approach this in a supervised fashion to learn about what separates essential and nonessential genes based on their CGR
+Plotting UMAP coordinate 1 against UMAP coordinate 2 allows us to say that the essential genes (yellow data points) and non-essential genes (green data points) are **not** separable by this unsupervised approach. It appears that we need to take a supervised approach to distinguish between essential and non-essential genes. 
 
 ### Metric learning
 
-A good essential gene landscape will have essential genes far in **distance** from  nonessential genes relative to the distance between any two essential or any two nonessential genes. Rather than defining such a distance metric, we will learn one from data. To do this, we will minimize the [TripletMarginLoss](https://kevinmusgrave.github.io/pytorch-metric-learning/) of embedded CGRs. The embedding will be the output of a fully-connected NN. As you can probably tell, there will be a lot of hyperparameters that can be optimized as well as model architectures. I won't do any of that as this is for instructional/educational  purposes only. I encourage anyone reading this to change optimizers, architectures, loss functions, etc. and find the best essential gene landscape from CGRs. In fact, you can even skip the CGRs and learn the seq2vec embedding as well!
+A good essential gene landscape will have essential genes far in **distance** from  nonessential genes relative to the distance between any two essential or any two nonessential genes. Rather than defining such a distance metric, we will learn one from data. To do this, we will minimize the [TripletMarginLoss](https://kevinmusgrave.github.io/pytorch-metric-learning/) of embedded CGRs. The Triplet Margin Loss encourages that dissimilar pairs of data points be distant from any similar pairs by at least a certain margin value. We will enforce this constraint not in the ambient space, but in the latent space or embedding space which will be the output of a simple fully-connect NN. As you can probably tell, there will be a lot of hyperparameters that can be optimized as well as model architectures. I won't do any of that as this is for instructional/educational  purposes only. I encourage anyone reading this to change optimizers, architectures, loss functions, etc. and find the best essential gene landscape from CGRs. In fact, you can even skip the CGRs and learn the seq2vec embedding as well!
 
 
 ```python
@@ -604,17 +604,6 @@ train_loader = DataLoader(train_data,shuffle=True,batch_size=BATCH_SIZE)
 
 
 ```python
-for batch_idx, (x,y) in enumerate(train_loader):
-#     print('batch idx{}, batch len {}'.format(batch_idx, len(data[0])) )
-    print(y.shape,x.shape)
-    break
-```
-
-    torch.Size([32]) torch.Size([32, 256])
-
-
-
-```python
 # training loop
 for epoch in range(250):
     for batch_idx, (x, y) in enumerate(train_loader):
@@ -660,8 +649,8 @@ edata
 
 
 
-    AnnData object with n_obs × n_vars = 3310 × 50
-        obs: 'gene_id', 'locus_tag', 'is_essential', 'seq', 'organism_id', 'gene', 'protein_id?', '?', 'biological process', 'biological function', 'bacteria', 'genome_ref', 'media', 'GO_id', '??', '???'
+    AnnData object with n_obs × n_vars = 3309 × 50
+        obs: 'organism_id', 'gene_id', 'gene', 'protein_id?', '?', 'biological process', 'biological function', 'bacteria', 'genome_ref', 'media', 'locus_tag', 'GO_id', '??', '???', 'seq', 'is_essential'
 
 
 
@@ -670,18 +659,20 @@ edata
 
 ```python
 sc.tl.pca(edata,n_comps=2)
-sc.pl.pca(edata,color='is_essential')
+sc.pl.pca(edata,color='is_essential',cmap='Set3')
 ```
 
 
     
-![png](/images/output_58_0.png)
+![png](output_57_0.png)
     
 
 
 The answer is **potentially**. 
 
-The above plot indicates that there is signal in the CGRs that can be exploited for separability of essential and nonessential genes. However, we trained the model on all sequences are displaying the training results. It will be interesting to see how this model generalizes on a test set. We will not do this. But we will see which other organisms essential genes are correctly classified using this model. 
+The above plot indicates that there is signal in the CGRs that can be exploited for separability of essential and nonessential genes. However, we trained the model on all sequences and are displaying results of the embedding of the training set. To test the model, let's make essential gene predictions for all the other bacteria in the essential gene database.
+
+We first need a classifier that takes in the embedded CGR and outputs whether it is essential or not. 
 
 ### Classification in learned metric space
 
@@ -725,7 +716,7 @@ acc_df = pd.DataFrame(acc.items(),columns=['bacteria','accuracy']).sort_values(b
 
 
 ```python
-plt.figure(figsize=(2,20))
+plt.figure(figsize=(2,28))
 plt.barh(acc_df.bacteria,acc_df.accuracy)
 plt.xlabel('accuracy')
 plt.grid(True)
@@ -734,10 +725,15 @@ plt.show()
 
 
     
-![png](/images/output_66_0.png)
+![png](output_65_0.png)
     
 
 
-It appears as though we have actually been able to classify essentiality of genes in other organisms by training only on a single one, ADP1. That raises the question:
+Our model of gene essentiality trained on only the ADP1 genome is able to accurately essentiallity of 30/82 organisms. Some open questions: 
 
 **Does the model identify organisms with similar essentiality landscapes?** 
+**How many distinct organisms should the model be trained with to ensure overall classification accuracy?**
+**We haven't checked essential gene classfiication accuracy (as that would require scraping NCBI for the fasta files for each of the above organisms). How does this accuracy look?**
+
+
+Any bugs? Any questions? Feel free to let me know!
