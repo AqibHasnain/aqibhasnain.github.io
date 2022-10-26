@@ -496,7 +496,7 @@ This leads to the question, **can we identify a nonlinear embedding that doesn't
 
 ### Manifold learning
 
-Let's explore manifold learninig as one such approach to identify this nonlinear embedding, specifically Uniform Manifold Approximation and Projection (UMAP) will be used. I highly recommend checking out this [write-up](https://pair-code.github.io/understanding-umap/) on the algorithmic ins and outs of UMAP, as I could not provide a better interpretation and intuition. 
+Let's explore manifold learninig as one such approach to identify this nonlinear embedding, specifically Uniform Manifold Approximation and Projection (UMAP) will be used. I highly recommend checking out this [article](https://towardsdatascience.com/how-exactly-umap-works-13e3040e1668https://pair-code.github.io/understanding-umap/) on the algorithmic ins and outs of UMAP, as I could not provide a better interpretation and intuition. 
 
 The general idea behind manifold learning is to, from data, learn the manifold that the data is being sampled from. It may be intuitive to most of us that if we are taking measurements from a physical or biological system, we do not expect the data points to fill all of Euclidean space, even if we are able to collect as many samples as we like. This is because every system operates under constraints e.g. concentration of biomolecules cannot approach infinity. If we can learn the data generating manifold, then we analyze how data points organize on the manifold and then make conclusions about individual cluster differences. This is what UMAP was designed to do.
 
