@@ -443,13 +443,13 @@ plot_CGR(adp1_df.iloc[-1]['seq'],k)
 
 
     
-![png](/images/output_29_0.png)
+![png](/images/output_29_0_post1.png)
     
 
 
 
     
-![png](/images/output_29_1.png)
+![png](/images/output_29_1_post1.png)
     
 
 
@@ -486,7 +486,7 @@ sc.pl.pca(adata,color='is_essential',cmap='Set3')
 
 
     
-![png](/images/output_35_0.png)
+![png](/images/output_35_0_post1.png)
     
 
 
@@ -515,7 +515,7 @@ sc.pl.umap(adata,color='is_essential',cmap='Set3')
 
 
     
-![png](/images/output_39_0.png)
+![png](/images/output_39_0_post1.png)
     
 
 
@@ -664,7 +664,7 @@ sc.pl.pca(edata,color='is_essential',cmap='Set3')
 
 
     
-![png](/images/output_57_0.png)
+![png](/images/output_57_0_post1.png)
     
 
 
@@ -725,7 +725,7 @@ plt.show()
 
 
     
-![png](/images/output_65_0.png)
+![png](/images/output_65_0_post1.png)
     
 
 
